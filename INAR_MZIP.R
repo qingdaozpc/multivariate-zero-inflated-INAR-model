@@ -1,13 +1,13 @@
 
 # Simulation of trivariate INAR_MZIP
-INAR_MZIP_sim <- function(n,time,p,pi0,beta){
+INAR_MZIP_sim <- function(n,time,X,N0,p,pi0,beta){
   data <- matrix(0,n*time,9)
   N.pre <- N0
   N.cur <- matrix(0,n,3)
   for (t in 1:time){
-    lambda <- exp(X %*% beta)
+    lambda <- exp(X%*%beta)
     y <- cbind(rpois(n,lambda[,1]),rpois(n,lambda[,2]),rpois(n,lambda[,3]))
-    u0 <- (runif(n)<pi0)*1
+    u0 <- (runif(n) < pi0)*1
     r <- u0*y
     for(i in 1:n){
       N.cur[i,] <- rbinom(3,N.pre[i,],p)+r[i,]
@@ -49,7 +49,7 @@ INAR_MZIP_loglik <- function(data,p,pi0,beta){
   N.pre <- data[,1:3]
   N.cur <- data[,4:6]
   X <- data[,7:9]
-  lambda <- exp(X %*% beta)
+  lambda <- exp(X%*%beta)
   sum(sapply(1:nrow(data),function(k) 
     log(INAR_MZIP_pmf(N.cur[k,],N.pre[k,],p,pi0,lambda[k,]))))
 }
@@ -157,15 +157,13 @@ EM_INAR_MZIP <- function(data,par){
 }
 
 #simulation
-set.seed(123)
-n=2000
-time=5
-X <- cbind(rep(1,n),rnorm(n),rbinom(n,1,0.5))
-N0 <- cbind(rpois(n,0.1),rpois(n,0.2),rpois(n,0.3))
-
 MC <- function(i){
   set.seed(i)
-  data <-INAR_MZIP_sim(n=2000,time=5,p=c(0.1,0.2,0.3),pi0=0.5,
+  n <- 2000
+  time <- 5
+  X <- cbind(rep(1,n),rnorm(n),rbinom(n,1,0.5))
+  N0 <- cbind(rpois(n,0.1),rpois(n,0.2),rpois(n,0.3))
+  data <-INAR_MZIP_sim(n,time,X,N0,p=c(0.1,0.2,0.3),pi0=0.5,
                        beta=cbind(c(-3,-1,1),c(-2,-1,-1),c(-1,1,-1)))
   par <- EM_INAR_MZIP(data,par=list(p=rep(0.5,3),pi0=0.5,beta=matrix(0,3,3)))
   return(par)
