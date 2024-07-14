@@ -1,6 +1,6 @@
 
 # Simulation of trivariate INAR_MZIH
-INAR_MZIH_sim <- function(n,time,p,pi0,pi,beta){
+INAR_MZIH_sim <- function(n,time,X,N0,p,pi0,pi,beta){
   data <- matrix(0,n*time,9)
   N.pre <- N0
   N.cur <- matrix(0,n,3)
@@ -42,9 +42,9 @@ MZIH_pmf <- function(z,pi0,pi,lambda){
 # The pmf of INAR_MZIH
 INAR_MZIH_pmf <- function(to,from,p,pi0,pi,lambda){
   pmf_array <- array(0,dim=c(to[1]+1,to[2]+1,to[3]+1))
-  for(i in 0:(to[1])){
-    for(j in 0:(to[2])){
-      for(k in 0:(to[3])){
+  for(i in 0:to[1]){
+    for(j in 0:to[2]){
+      for(k in 0:to[3]){
         pmf_array[i+1,j+1,k+1] <- MZIH_pmf(c(i,j,k),pi0,pi,lambda)*
           dbinom(to[1]-i,from[1],p[1])*
           dbinom(to[2]-j,from[2],p[2])*
@@ -58,8 +58,8 @@ INAR_MZIH_pmf <- function(to,from,p,pi0,pi,lambda){
 # The pmf of INAR_MZIH with fixed margin1
 INAR_MZIH1_pmf <- function(to,from,p,pi0,pi,lambda){
   pmf_matrix <- matrix(0,to[2]+1,to[3]+1)
-  for(j in 0:(to[2])){
-    for(k in 0:(to[3])){
+  for(j in 0:to[2]){
+    for(k in 0:to[3]){
       pmf_matrix[j+1,k+1] <- MZIH_pmf(c(0,j,k),pi0,pi,lambda)*
         dbinom(to[1],from[1],p[1])*
         dbinom(to[2]-j,from[2],p[2])*
@@ -72,8 +72,8 @@ INAR_MZIH1_pmf <- function(to,from,p,pi0,pi,lambda){
 # The pmf of INAR_MZIH with fixed margin2
 INAR_MZIH2_pmf <- function(to,from,p,pi0,pi,lambda){
   pmf_matrix <- matrix(0,to[1]+1,to[3]+1)
-  for(i in 0:(to[1])){
-    for(k in 0:(to[3])){
+  for(i in 0:to[1]){
+    for(k in 0:to[3]){
       pmf_matrix[i+1,k+1] <- MZIH_pmf(c(i,0,k),pi0,pi,lambda)*
         dbinom(to[1]-i,from[1],p[1])*
         dbinom(to[2],from[2],p[2])*
@@ -86,8 +86,8 @@ INAR_MZIH2_pmf <- function(to,from,p,pi0,pi,lambda){
 # The pmf of INAR_MZIH with fixed margin3
 INAR_MZIH3_pmf <- function(to,from,p,pi0,pi,lambda){
   pmf_matrix <- matrix(0,to[1]+1,to[2]+1)
-  for(i in 0:(to[1])){
-    for(j in 0:(to[2])){
+  for(i in 0:to[1]){
+    for(j in 0:to[2]){
       pmf_matrix[i+1,j+1] <- MZIH_pmf(c(i,j,0),pi0,pi,lambda)*
         dbinom(to[1]-i,from[1],p[1])*
         dbinom(to[2]-j,from[2],p[2])*
@@ -164,7 +164,7 @@ EM_INAR_MZIH <- function(data,par){
   
   # posterior expectation of tau
   post_Etau <- function(p,pi0,pi,beta){
-    lambda <- exp(X %*% beta)
+    lambda <- exp(X%*%beta)
     tau <- matrix(0,nt,3)
     for(i in 1:nt){
       tau1 <- 1-INAR_MZIH1_pmf(N.cur[i,],N.pre[i,],p,pi0,pi,lambda[i,])/
@@ -231,15 +231,13 @@ EM_INAR_MZIH <- function(data,par){
 }
 
 #simulation
-set.seed(123)
-n=2000
-time=5
-X <- cbind(rep(1,n),rnorm(n),rbinom(n,1,0.5))
-N0 <- cbind(rpois(n,0.1),rpois(n,0.2),rpois(n,0.3))
-
 MC <- function(i){
   set.seed(i)
-  data <-INAR_MZIH_sim(n=2000,time=5,p=c(0.1,0.2,0.3),pi0=0.5,pi=c(0.3,0.2,0.1),
+  n <- 2000
+  time <- 5
+  X <- cbind(rep(1,n),rnorm(n),rbinom(n,1,0.5))
+  N0 <- cbind(rpois(n,0.1),rpois(n,0.2),rpois(n,0.3))
+  data <- INAR_MZIH_sim(n,time,X,N0,p=c(0.1,0.2,0.3),pi0=0.5,pi=c(0.3,0.2,0.1),
                        beta=cbind(c(-3,-1,1),c(-2,-1,-1),c(-1,1,-1)))
   par <- EM_INAR_MZIH(data,par=list(p=rep(0.5,3),pi0=0.5,pi=rep(0.5,3),
                                     beta=matrix(0,3,3)))
