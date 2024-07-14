@@ -146,7 +146,7 @@ EM_INAR_MZIP <- function(data,par){
     h3 <- -t(X)%*%((1-w)*lambda[,3]*X) 
     beta[,3] <- beta[,3]-solve(h3)%*%s3
     
-    # update the likelihood
+    # update the loglikelihood
     loglik.new <- INAR_MZIP_loglik(data,p,pi0,beta)
     dif <- loglik.new-loglik
     loglik <- loglik.new 
