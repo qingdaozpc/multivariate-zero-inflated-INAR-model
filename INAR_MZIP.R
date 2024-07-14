@@ -31,9 +31,9 @@ MZIP_pmf <- function(z,pi0,lambda){
 # The pmf of INAR_MZIP
 INAR_MZIP_pmf <- function(to,from,p,pi0,lambda){
   pmf_array <- array(0,dim=c(to[1]+1,to[2]+1,to[3]+1))
-  for(i in 0:(to[1])){
-    for(j in 0:(to[2])){
-      for(k in 0:(to[3])){
+  for(i in 0:to[1]){
+    for(j in 0:to[2]){
+      for(k in 0:to[3]){
         pmf_array[i+1,j+1,k+1] <- MZIP_pmf(c(i,j,k),pi0,lambda)*
           dbinom(to[1]-i,from[1],p[1])*
           dbinom(to[2]-j,from[2],p[2])*
@@ -65,7 +65,7 @@ EM_INAR_MZIP <- function(data,par){
   post_Ey <- function(p,pi0,beta){
     indicator <- diag(3)
     y <- matrix(0,nt,3)
-    lambda <- exp(X %*% beta)
+    lambda <- exp(X%*%beta)
     for(i in 1:nt){
       if(N.pre[i,1]==0|N.cur[i,1]==0){
         y1 <- 0
